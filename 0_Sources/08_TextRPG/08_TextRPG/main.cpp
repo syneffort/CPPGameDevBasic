@@ -64,10 +64,11 @@ struct _tagItem
 	char		strName[NAME_SIZE];
 	char		strTypeName[NAME_SIZE];
 	ITEM_TYPE	eType;
-	int			iMIn;
+	int			iMin;
 	int			iMax;
 	int			iPrice;
-	int			strDesc[ITEM_DESC_LENGTH];
+	int			iSell;
+	char		strDesc[ITEM_DESC_LENGTH];
 };
 
 struct _tagInverntory
@@ -228,8 +229,64 @@ int main()
 	tMonsterArr[2].iGoldMin = 20000;
 	tMonsterArr[2].iGoldMax = 50000;
 
-	_tagItem	iStoreWeapon[STORE_WEAPON_MAX] = {};
-	_tagItem	iStoreArmor[STORE_ARMOR_MAX] = {};
+	_tagItem	tStoreWeapon[STORE_WEAPON_MAX] = {};
+	_tagItem	tStoreArmor[STORE_ARMOR_MAX] = {};
+
+	// 무기 정보 설정
+	strcpy_s(tStoreWeapon[0].strName, "목검");
+	strcpy_s(tStoreWeapon[0].strTypeName, "무기");
+	strcpy_s(tStoreWeapon[0].strDesc, "나무로 만든 칼");
+	tStoreWeapon[0].eType = IT_WEAPON;
+	tStoreWeapon[0].iMin = 5;
+	tStoreWeapon[0].iMax = 10;
+	tStoreWeapon[0].iPrice = 1000;
+	tStoreWeapon[0].iSell = 500;
+
+	strcpy_s(tStoreWeapon[1].strName, "장궁");
+	strcpy_s(tStoreWeapon[1].strTypeName, "무기");
+	strcpy_s(tStoreWeapon[1].strDesc, "짱짱한 활");
+	tStoreWeapon[1].eType = IT_WEAPON;
+	tStoreWeapon[1].iMin = 20;
+	tStoreWeapon[1].iMax =400;
+	tStoreWeapon[1].iPrice = 7000;
+	tStoreWeapon[1].iSell = 3500;
+
+	strcpy_s(tStoreWeapon[2].strName, "지팡이");
+	strcpy_s(tStoreWeapon[2].strTypeName, "무기");
+	strcpy_s(tStoreWeapon[2].strDesc, "나무로 만든 지팡이");
+	tStoreWeapon[2].eType = IT_WEAPON;
+	tStoreWeapon[2].iMin = 90;
+	tStoreWeapon[2].iMax = 150;
+	tStoreWeapon[2].iPrice = 30000;
+	tStoreWeapon[2].iSell = 15000;
+
+	// 방어구 정보 설정
+	strcpy_s(tStoreArmor[0].strName, "천갑옷");
+	strcpy_s(tStoreArmor[0].strTypeName, "방어구");
+	strcpy_s(tStoreArmor[0].strDesc, "천으로 만든 허접한 갑옷");
+	tStoreArmor[0].eType = IT_ARMOR;
+	tStoreArmor[0].iMin = 2;
+	tStoreArmor[0].iMax = 5;
+	tStoreArmor[0].iPrice = 1000;
+	tStoreArmor[0].iSell = 500;
+
+	strcpy_s(tStoreArmor[1].strName, "가죽갑옷");
+	strcpy_s(tStoreArmor[1].strTypeName, "방어구");
+	strcpy_s(tStoreArmor[1].strDesc, "동물 가죽으로 만든 질긴 갑옷");
+	tStoreArmor[1].eType = IT_ARMOR;
+	tStoreArmor[1].iMin = 10;
+	tStoreArmor[1].iMax = 20;
+	tStoreArmor[1].iPrice = 7000;
+	tStoreArmor[1].iSell = 3500;
+
+	strcpy_s(tStoreArmor[2].strName, "풀플레이트아머");
+	strcpy_s(tStoreArmor[2].strTypeName, "방어구");
+	strcpy_s(tStoreArmor[2].strDesc, "강철로 만든 판금갑옷");
+	tStoreArmor[2].eType = IT_ARMOR;
+	tStoreArmor[2].iMin = 70;
+	tStoreArmor[2].iMax = 90;
+	tStoreArmor[2].iPrice = 30000;
+	tStoreArmor[2].iSell = 15000;
 
 	while (true)
 	{
@@ -413,16 +470,132 @@ int main()
 						system("cls");
 
 						cout << "================== 무기 상점 ==================" << endl;
+						for (int i = 0; i < STORE_WEAPON_MAX; i++)
+						{
+							cout << i + 1 << ". 이름 : " << tStoreWeapon[i].strName << "\t종류 : " << tStoreWeapon[i].strTypeName << endl;
+							cout << "공격력" << tStoreWeapon[i].iMin << " _ " << tStoreWeapon[i].iMax << endl;
+							cout << "판매가격 : " << tStoreWeapon[i].iPrice << "\t" << "매입가격 : " << tStoreWeapon[i].iSell << endl;
+							cout << "설명 : " << tStoreWeapon[i].strDesc << endl << endl;
+						}
 
+						cout << STORE_WEAPON_MAX + 1 << ".뒤로가기" << endl;
+						cout << "보유금액 : " << tPlayer.tInventory.iGold << "Gold" << endl;
+						cout << "남은공간 : " << INVENTORY_MAX - tPlayer.tInventory.iItemCount << endl << endl;
+						cout << "구입할 아이템을 선택하세요 : ";
+						cin >> iMenu;
+
+						if (cin.fail())
+						{
+							cin.clear();
+							cin.ignore(1024, '\n');
+							continue;
+						}
+						else if (iMenu == STORE_WEAPON_MAX + 1)
+							break;
+						else if (iMenu < 1 || iMenu > STORE_WEAPON_MAX + 1)
+						{
+							cout << "잘못 선택했습니다." << endl;
+							system("cls");
+							continue;
+						}
+
+						int iWeaponIndex = iMenu - 1;
+						if (tPlayer.tInventory.iItemCount == INVENTORY_MAX)
+						{
+							cout << "가방이 꽉 찼습니다." << endl;
+							system("pause");
+							continue;
+						}
+						else if (tPlayer.tInventory.iGold < tStoreWeapon[iWeaponIndex].iPrice)
+						{
+							cout << "골드가 부족합니다." << endl;
+							system("pause");
+							continue;
+						}
+
+						tPlayer.tInventory.tItem[tPlayer.tInventory.iItemCount] = tStoreWeapon[iWeaponIndex];
+						tPlayer.tInventory.iItemCount++;
+
+						tPlayer.tInventory.iGold -= tStoreWeapon[iWeaponIndex].iPrice;
+
+						cout << tStoreWeapon[iWeaponIndex].strName << " 아이템을 구매했습니다." << endl;
+						system("pause");
 					}
 					break;
 				case SM_ARMOR:
+					while (true)
+					{
+						system("cls");
+
+						cout << "================== 무기 상점 ==================" << endl;
+						for (int i = 0; i < STORE_ARMOR_MAX; i++)
+						{
+							cout << i + 1 << ". 이름 : " << tStoreArmor[i].strName << "\t종류 : " << tStoreArmor[i].strTypeName << endl;
+							cout << "방어력" << tStoreArmor[i].iMin << " _ " << tStoreArmor[i].iMax << endl;
+							cout << "판매가격 : " << tStoreArmor[i].iPrice << "\t" << "매입가격 : " << tStoreArmor[i].iSell << endl;
+							cout << "설명 : " << tStoreArmor[i].strDesc << endl << endl;
+						}
+
+						cout << STORE_ARMOR_MAX + 1 << ".뒤로가기" << endl;
+						cout << "보유금액 : " << tPlayer.tInventory.iGold << "Gold" << endl;
+						cout << "남은공간 : " << STORE_ARMOR_MAX - tPlayer.tInventory.iItemCount << endl << endl;
+						cout << "구입할 아이템을 선택하세요 : ";
+						cin >> iMenu;
+
+						if (cin.fail())
+						{
+							cin.clear();
+							cin.ignore(1024, '\n');
+							continue;
+						}
+						else if (iMenu == STORE_ARMOR_MAX + 1)
+							break;
+						else if (iMenu < 1 || iMenu > STORE_ARMOR_MAX + 1)
+						{
+							cout << "잘못 선택했습니다." << endl;
+							system("cls");
+							continue;
+						}
+
+						int iWeaponIndex = iMenu - 1;
+						if (tPlayer.tInventory.iItemCount == INVENTORY_MAX)
+						{
+							cout << "가방이 꽉 찼습니다." << endl;
+							system("pause");
+							continue;
+						}
+						else if (tPlayer.tInventory.iGold < tStoreWeapon[iWeaponIndex].iPrice)
+						{
+							cout << "골드가 부족합니다." << endl;
+							system("pause");
+							continue;
+						}
+
+						tPlayer.tInventory.tItem[tPlayer.tInventory.iItemCount] = tStoreWeapon[iWeaponIndex];
+						tPlayer.tInventory.iItemCount++;
+
+						tPlayer.tInventory.iGold -= tStoreWeapon[iWeaponIndex].iPrice;
+
+						cout << tStoreWeapon[iWeaponIndex].strName << " 아이템을 구매했습니다." << endl;
+						system("pause");
+					}
 					break;
 				}
 			}
 
 			break;
 		case MM_INVENTORY:
+			while (true)
+			{
+				system("cls");
+
+				cout << "================== 가방 ==================" << endl << endl;
+				cout << "================== 플레이어 ==================" << endl;
+
+				cout << "이름 : " << tPlayer.strName << "\t직업 " << tPlayer.strJobName << endl;
+				cout << "레벨 : " << tPlayer.iLevel << "\t경험치" << tPlayer.iExp <<  endl;
+			}
+
 			break;
 		}
 	}

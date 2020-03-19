@@ -103,5 +103,19 @@ int main()
 	pStudent -> iKor = 80; 
 	cout << tStudent.iKor << endl;
 
+	// void 포인터
+	// *void 변수를 선언하게 되면 이 변수는 모든 타입의 메모리 주소를 저장할 수 있음
+	// 단, 역참조가 불가능하고 메모리 주소만 저장 가능
+	void* pVoid = &iNumber;
+	cout << "iNumber Address : " << pVoid << endl;
+	//*pVoid = 10;
+	int* pConvert = (int*)pVoid;
+	*pConvert = 101010;
+	cout << iNumber << endl;
+
+	pVoid = &tStudent;
+	cout << "tStudent Address : " << pVoid << endl;
+	
+
 	return 0;
 }

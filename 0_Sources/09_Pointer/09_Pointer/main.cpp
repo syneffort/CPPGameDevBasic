@@ -112,10 +112,31 @@ int main()
 	int* pConvert = (int*)pVoid;
 	*pConvert = 101010;
 	cout << iNumber << endl;
+	*((int*)pVoid) = 9999;
+	cout << iNumber << endl;
 
 	pVoid = &tStudent;
 	cout << "tStudent Address : " << pVoid << endl;
-	
 
+	int iNumber1 = 1111;
+	iNumber = 2222;
+
+	// 이중포인터 : *을 2개 붙임
+	// 이중 포인터는 포인터의 포인터. 포인터 변수의 메모리 주소를 저장하는 포인터임
+	int **ppNum = &pNum;
+	*ppNum = &iNumber1;
+	*pNum = 3333;
+
+	cout << "iNumber1 : " << iNumber1 << endl;
+	cout << "iNumber : " << iNumber << endl;
+	cout << "iNumber Addr : " << &iNumber << endl;
+	cout << "*pNum : " << *pNum << endl;
+	cout << "pNum Value : " << pNum << endl;
+	cout << "pNum Addr : " << &pNum << endl;
+	cout << "*ppNum : " << *ppNum << endl;
+	cout << "**ppNum : " << **ppNum << endl;
+	cout << "ppNum : " << ppNum << endl;
+	cout << "ppNum Addr : " << &ppNum << endl;
+	
 	return 0;
 }

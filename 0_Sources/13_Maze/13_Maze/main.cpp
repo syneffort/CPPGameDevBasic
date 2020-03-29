@@ -32,6 +32,7 @@ typedef struct _tagPlayer
 {
 	_tagPoint tPos;
 	bool bWallPush;
+	bool bPushOnOff;
 	bool bTransparency;
 	int iBombPower;
 }PLAYER, *PPLAYER;
@@ -87,7 +88,7 @@ void Output(char Maze[21][21], PPLAYER pPlayer)
 			else if (Maze[i][j] == '3')
 				cout << "¡Ý";
 			else if (Maze[i][j] == '5')
-				cout << "¡×";
+				cout << "£À";
 			else if (Maze[i][j] == '6')
 				cout << "¡ê";
 			else if (Maze[i][j] == '7')
@@ -104,9 +105,15 @@ void Output(char Maze[21][21], PPLAYER pPlayer)
 		cout << "OFF\t";
 	cout << "º® ¹Ð±â : ";
 	if (pPlayer->bWallPush)
-		cout << "ON" << endl;
+	{
+		cout << "°¡´É / ";
+		if (pPlayer->bPushOnOff)
+			cout << "ON" << endl;
+		else
+			cout << "OFF" << endl;
+	}
 	else
-		cout << "OFF" << endl;
+		cout << "ºÒ°¡´É / OFF" << endl;
 }
 
 bool AddItem(char cItemType, PPLAYER pPlayer)
@@ -121,6 +128,8 @@ bool AddItem(char cItemType, PPLAYER pPlayer)
 	else if (cItemType == '6')
 	{
 		pPlayer->bWallPush = true;
+		pPlayer->bPushOnOff = true;
+
 		return true;
 	}
 	else if (cItemType == '7')
@@ -140,6 +149,31 @@ void MoveUp(char Maze[21][21], PPLAYER pPlayer)
 			&& Maze[pPlayer->tPos.y - 1][pPlayer->tPos.x] != '4')
 		{
 			--pPlayer->tPos.y;
+		}
+		else if (pPlayer->bWallPush && Maze[pPlayer->tPos.y - 1][pPlayer->tPos.x] == '0')
+		{
+			if (pPlayer->bPushOnOff)
+			{
+				if (pPlayer->tPos.y - 2 >= 0)
+				{
+					if (Maze[pPlayer->tPos.y - 2][pPlayer->tPos.x] == '0')
+					{
+						if (pPlayer->bTransparency)
+							--pPlayer->tPos.y;
+					}
+					else if (Maze[pPlayer->tPos.y - 2][pPlayer->tPos.x] == '1')
+					{
+						Maze[pPlayer->tPos.y - 2][pPlayer->tPos.x] = '0';
+						Maze[pPlayer->tPos.y - 1][pPlayer->tPos.x] = '1';
+						--pPlayer->tPos.y;
+					}
+				}
+				else if (pPlayer->bTransparency)
+					--pPlayer->tPos.y;
+			}
+
+			else if (pPlayer->bTransparency)
+				--pPlayer->tPos.y;
 		}
 		else if (pPlayer->bTransparency)
 			--pPlayer->tPos.y;
@@ -394,7 +428,7 @@ int main()
 			break;
 		}
 
-		cout << "t : ÆøÅº ¼³Ä¡ u : ÆøÅº ÅÍ¶ß¸®±â i : º® ¹Ð±â" << endl;
+		cout << "t : ÆøÅº ¼³Ä¡ u : ÆøÅº ÅÍ¶ß¸®±â i : º® ¹Ð±â ON/OFF" << endl;
 		cout << "w : À§ s : ¾Æ·¡ a : ÁÂ d : ¿ì q : Á¾·á >> ";
 		char cInput = _getch();
 
@@ -405,6 +439,11 @@ int main()
 			CreateBomb(strMaze, &tPlayer, tBombPos, &iBombCount);
 		else if (cInput == 'u' || cInput == 'U')
 			Fire(strMaze, &tPlayer, tBombPos, &iBombCount);
+		else if (cInput == 'i' || cInput == 'I')
+		{
+			if (tPlayer.bWallPush)
+				tPlayer.bPushOnOff = !tPlayer.bPushOnOff;
+		}
 		else
 			MovePlayer(strMaze, &tPlayer, cInput);
 	}

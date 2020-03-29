@@ -1,6 +1,7 @@
 
 #include <iostream>
 #include <conio.h>
+#include <time.h>
 
 using namespace std;
 
@@ -10,7 +11,11 @@ using namespace std;
 2 : ½ÃÀÛÁ¡
 3 : µµÂøÁ¡
 4 : ÆøÅº
-5 : Æø¹ß È¿°ú
+5 : ÆÄ¿ö ¾ÆÀÌÅÛ
+6 : º®¹Ð±â ¾ÆÀÌÅÛ
+7 : Åõ¸í ¾ÆÀÌÅÛ
+8 : ¿úÈ¦
+
 */
 
 struct _tagPoint
@@ -23,7 +28,15 @@ struct _tagPoint
 typedef _tagPoint POINT;
 typedef _tagPoint* PPOINT;
 
-void SetMaze(char Maze[21][21], PPOINT pPlayerPos, PPOINT pStartPos, PPOINT pEndPos)
+typedef struct _tagPlayer
+{
+	_tagPoint tPos;
+	bool bWallPush;
+	bool bTransparency;
+	int iBombPower;
+}PLAYER, *PPLAYER;
+
+void SetMaze(char Maze[21][21], PPLAYER pPlayer, PPOINT pStartPos, PPOINT pEndPos)
 {
 	pStartPos->x = 0;
 	pStartPos->y = 0;
@@ -31,7 +44,7 @@ void SetMaze(char Maze[21][21], PPOINT pPlayerPos, PPOINT pStartPos, PPOINT pEnd
 	pEndPos->x = 19;
 	pEndPos->y = 19;
 
-	*pPlayerPos = *pStartPos;
+	pPlayer->tPos = *pStartPos;
 
 	strcpy_s(Maze[0],	"21100000000000000000");
 	strcpy_s(Maze[1],	"01111110010010101000");
@@ -55,7 +68,7 @@ void SetMaze(char Maze[21][21], PPOINT pPlayerPos, PPOINT pStartPos, PPOINT pEnd
 	strcpy_s(Maze[19],	"01111011011111111113");
 }
 
-void Output(char Maze[21][21], PPOINT pPlayerPos)
+void Output(char Maze[21][21], PPLAYER pPlayer)
 {
 	for (int i = 0; i < 20; i++)
 	{
@@ -63,169 +76,290 @@ void Output(char Maze[21][21], PPOINT pPlayerPos)
 		{
 			if (Maze[i][j] == '4')
 				cout << "¢Í";
-			else if (pPlayerPos->x == j && pPlayerPos->y == i)
+			else if (pPlayer->tPos.x == j && pPlayer->tPos.y == i)
 				cout << "¡Ù";
-			else
-			{
-				switch (Maze[i][j])
-				{
-				case '0':
-					cout << "¡á";
-					break;
-				case '1':
-					cout << " ";
-					break;
-				case '2':
-					cout << "¡Ú";
-					break;
-				case '3':
-					cout << "¡Ý";
-					break;
-				}
-			}
+			else if (Maze[i][j] == '0')
+				cout << "¡á";
+			else if (Maze[i][j] == '1')
+				cout << "  ";
+			else if (Maze[i][j] == '2')
+				cout << "¡Ú";
+			else if (Maze[i][j] == '3')
+				cout << "¡Ý";
+			else if (Maze[i][j] == '5')
+				cout << "¡×";
+			else if (Maze[i][j] == '6')
+				cout << "¡ê";
+			else if (Maze[i][j] == '7')
+				cout << "¢¹";
 		}
 		cout << endl;
 	}
+
+	cout << "ÆøÅº ÆÄ¿ö : " << pPlayer->iBombPower << endl;
+	cout << "º® Åë°ú : ";
+	if (pPlayer->bTransparency)
+		cout << "ON\t";
+	else
+		cout << "OFF\t";
+	cout << "º® ¹Ð±â : ";
+	if (pPlayer->bWallPush)
+		cout << "ON" << endl;
+	else
+		cout << "OFF" << endl;
 }
 
-void MoveUp(char Maze[21][21], PPOINT pPlayerPos)
+bool AddItem(char cItemType, PPLAYER pPlayer)
 {
-	if (pPlayerPos->y - 1 >= 0)
+	if (cItemType == '5')
 	{
-		if (Maze[pPlayerPos->y - 1][pPlayerPos->x] != '0'
-			&& Maze[pPlayerPos->y - 1][pPlayerPos->x] != '4')
+		if (pPlayer->iBombPower < 5)
+			pPlayer->iBombPower++;
+
+		return true;
+	}
+	else if (cItemType == '6')
+	{
+		pPlayer->bWallPush = true;
+		return true;
+	}
+	else if (cItemType == '7')
+	{
+		pPlayer->bTransparency = true;
+		return true;
+	}
+
+	return false;
+}
+
+void MoveUp(char Maze[21][21], PPLAYER pPlayer)
+{
+	if (pPlayer->tPos.y - 1 >= 0)
+	{
+		if (Maze[pPlayer->tPos.y - 1][pPlayer->tPos.x] != '0'
+			&& Maze[pPlayer->tPos.y - 1][pPlayer->tPos.x] != '4')
 		{
-			pPlayerPos->y--;
+			--pPlayer->tPos.y;
 		}
+		else if (pPlayer->bTransparency)
+			--pPlayer->tPos.y;
+		
+		if (AddItem(Maze[pPlayer->tPos.y][pPlayer->tPos.x], pPlayer))
+			Maze[pPlayer->tPos.y][pPlayer->tPos.x] = '1';
 	}
 }
 
-void MoveDown(char Maze[21][21], PPOINT pPlayerPos)
+void MoveDown(char Maze[21][21], PPLAYER pPlayer)
 {
-	if (pPlayerPos->y + 1 <= 19)
+	if (pPlayer->tPos.y + 1 <= 19)
 	{
-		if (Maze[pPlayerPos->y + 1][pPlayerPos->x] != '0'
-			&& Maze[pPlayerPos->y + 1][pPlayerPos->x] != '4')
+		if (Maze[pPlayer->tPos.y + 1][pPlayer->tPos.x] != '0'
+			&& Maze[pPlayer->tPos.y + 1][pPlayer->tPos.x] != '4')
 		{
-			pPlayerPos->y++;
+			++pPlayer->tPos.y;
 		}
+
+		else if (pPlayer->bTransparency)
+			++pPlayer->tPos.y;
+
+		if (AddItem(Maze[pPlayer->tPos.y][pPlayer->tPos.x], pPlayer))
+			Maze[pPlayer->tPos.y][pPlayer->tPos.x] = '1';
 	}
 }
 
-void MoveLeft(char Maze[21][21], PPOINT pPlayerPos)
+void MoveLeft(char Maze[21][21], PPLAYER pPlayer)
 {
-	if (pPlayerPos->x - 1 >= 0)
+	if (pPlayer->tPos.x - 1 >= 0)
 	{
-		if (Maze[pPlayerPos->y][pPlayerPos->x - 1] != '0'
-			&& Maze[pPlayerPos->y][pPlayerPos->x - 1] != '4')
+		if (Maze[pPlayer->tPos.y][pPlayer->tPos.x - 1] != '0'
+			&& Maze[pPlayer->tPos.y][pPlayer->tPos.x - 1] != '4')
 		{
-			pPlayerPos->x--;
+			--pPlayer->tPos.x;
 		}
+
+		else if (pPlayer->bTransparency)
+			--pPlayer->tPos.x;
+
+		if (AddItem(Maze[pPlayer->tPos.y][pPlayer->tPos.x], pPlayer))
+			Maze[pPlayer->tPos.y][pPlayer->tPos.x] = '1';
 	}
 }
 
-void MoveRight(char Maze[21][21], PPOINT pPlayerPos)
+void MoveRight(char Maze[21][21], PPLAYER pPlayer)
 {
-	if (pPlayerPos->x + 1 <= 19)
+	if (pPlayer->tPos.x + 1 <= 19)
 	{
-		if (Maze[pPlayerPos->y][pPlayerPos->x + 1] != '0'
-			&& Maze[pPlayerPos->y][pPlayerPos->x + 1] != '4')
+		if (Maze[pPlayer->tPos.y][pPlayer->tPos.x + 1] != '0'
+			&& Maze[pPlayer->tPos.y][pPlayer->tPos.x + 1] != '4')
 		{
-			pPlayerPos->x++;
+			++pPlayer->tPos.x;
 		}
+
+		else if (pPlayer->bTransparency)
+			++pPlayer->tPos.x;
+
+		if (AddItem(Maze[pPlayer->tPos.y][pPlayer->tPos.x], pPlayer))
+			Maze[pPlayer->tPos.y][pPlayer->tPos.x] = '1';
 	}
 }
 
-void MovePlayer(char Maze[21][21], PPOINT pPlayerPos, char cInput)
+void MovePlayer(char Maze[21][21], PPLAYER pPlayer, char cInput)
 {
 	switch (cInput)
 	{
 	case 'w':
 	case 'W':
-		MoveUp(Maze, pPlayerPos);
+		MoveUp(Maze, pPlayer);
 		break;
 	case 's':
 	case 'S':
-		MoveDown(Maze, pPlayerPos);
+		MoveDown(Maze, pPlayer);
 		break;
 	case 'a':
 	case 'A':
-		MoveLeft(Maze, pPlayerPos);
+		MoveLeft(Maze, pPlayer);
 		break;
 	case 'd':
 	case 'D':
-		MoveRight(Maze, pPlayerPos);
+		MoveRight(Maze, pPlayer);
 		break;
 	}
 }
 
-void CreateBomb(char Maze[21][21], const PPOINT pPlayer, PPOINT pBombArr, int* pBombCount)
+void CreateBomb(char Maze[21][21], const PPLAYER pPlayer, PPOINT pBombArr, int* pBombCount)
 {
 	if (*pBombCount == 5)
 		return;
 
+	else if (Maze[pPlayer->tPos.y][pPlayer->tPos.x] == '0')
+		return;
+
 	for (int i = 0; i < *pBombCount; i++)
 	{
-		if (pPlayer->x == pBombArr[i].x
-			&& pPlayer->y == pBombArr[i].y)
+		if (pPlayer->tPos.x == pBombArr[i].x
+			&& pPlayer->tPos.y == pBombArr[i].y)
 			return;
 	}
 
-	pBombArr[*pBombCount] = *pPlayer;
+	pBombArr[*pBombCount] = pPlayer->tPos;
 	(*pBombCount)++;
 
-	Maze[pPlayer->y][pPlayer->x] = '4';
+	Maze[pPlayer->tPos.y][pPlayer->tPos.x] = '4';
 }
 
-void ReturnPlayer(PPOINT pPlayer)
-{
-	pPlayer->x = 0;
-	pPlayer->y = 0;
-}
-
-void Fire(char Maze[21][21], PPOINT pPlayer, PPOINT pBombArr, int* pBombCount)
+void Fire(char Maze[21][21], PPLAYER pPlayer, PPOINT pBombArr, int* pBombCount)
 {
 	for (int i = 0; i < *pBombCount; i++)
 	{
 		Maze[pBombArr[i].y][pBombArr[i].x] = '1';
 
-		if (pPlayer->x == pBombArr[i].x && pPlayer->y == pBombArr[i].y)
-			ReturnPlayer(pPlayer);
-
-		if (pBombArr[i].y - 1 >= 0)
+		if (pPlayer->tPos.x == pBombArr[i].x && pPlayer->tPos.y == pBombArr[i].y)
 		{
-			if (Maze[pBombArr[i].y - 1][pBombArr[i].x] == '0')
-				Maze[pBombArr[i].y - 1][pBombArr[i].x] = '1';
-
-			if (pPlayer->x == pBombArr[i].x && pPlayer->y == pBombArr[i].y - 1)
-				ReturnPlayer(pPlayer);
+			pPlayer->tPos.x = 0;
+			pPlayer->tPos.y = 0;
 		}
 
-		if (pBombArr[i].y + 1 <= 19)
+		for (int j = 1; j <= pPlayer->iBombPower; j++)
 		{
-			if (Maze[pBombArr[i].y + 1][pBombArr[i].x] == '0')
-				Maze[pBombArr[i].y + 1][pBombArr[i].x] = '1';
+			if (pBombArr[i].y - j >= 0)
+			{
+				if (Maze[pBombArr[i].y - j][pBombArr[i].x] == '0')
+				{
+					if (rand() % 100 < 20)
+					{
+						int iPercent = rand() % 100;
 
-			if (pPlayer->x == pBombArr[i].x && pPlayer->y == pBombArr[i].y + 1)
-				ReturnPlayer(pPlayer);
-		}
+						if (iPercent < 70)
+							Maze[pBombArr[i].y - j][pBombArr[i].x] = '5';
+						else if (iPercent < 80)
+							Maze[pBombArr[i].y - j][pBombArr[i].x] = '6';
+						else
+							Maze[pBombArr[i].y - j][pBombArr[i].x] = '7';
+					}
+					else
+						Maze[pBombArr[i].y - j][pBombArr[i].x] = '1';
+				}
 
-		if (pBombArr[i].x - 1 >= 0)
-		{
-			if (Maze[pBombArr[i].y][pBombArr[i].x - 1] == '0')
-				Maze[pBombArr[i].y][pBombArr[i].x - 1] = '1';
+				if (pPlayer->tPos.x == pBombArr[i].x && pPlayer->tPos.y == pBombArr[i].y - j)
+				{
+					pPlayer->tPos.x = 0;
+					pPlayer->tPos.y = 0;
+				}
+			}
 
-			if (pPlayer->x == pBombArr[i].x - 1 && pPlayer->y == pBombArr[i].y)
-				ReturnPlayer(pPlayer);
-		}
+			if (pBombArr[i].y + j <= 19)
+			{
+				if (Maze[pBombArr[i].y + 1][pBombArr[i].x] == '0')
+				{
+					if (rand() % 100 < 20)
+					{
+						int iPercent = rand() % 100;
 
-		if (pBombArr[i].x + 1 <= 19)
-		{
-			if (Maze[pBombArr[i].y][pBombArr[i].x + 1] == '0')
-				Maze[pBombArr[i].y][pBombArr[i].x + 1] = '1';
+						if (iPercent < 70)
+							Maze[pBombArr[i].y + j][pBombArr[i].x] = '5';
+						else if (iPercent < 80)
+							Maze[pBombArr[i].y + j][pBombArr[i].x] = '6';
+						else
+							Maze[pBombArr[i].y + j][pBombArr[i].x] = '7';
+					}
+					else
+						Maze[pBombArr[i].y + j][pBombArr[i].x] = '1';
+				}
+					
 
-			if (pPlayer->x == pBombArr[i].x + 1 && pPlayer->y == pBombArr[i].y)
-				ReturnPlayer(pPlayer);
+				if (pPlayer->tPos.x == pBombArr[i].x && pPlayer->tPos.y == pBombArr[i].y + j)
+				{
+					pPlayer->tPos.x = 0;
+					pPlayer->tPos.y = 0;
+				}
+			}
+
+			if (pBombArr[i].x - j >= 0)
+			{
+				if (Maze[pBombArr[i].y][pBombArr[i].x - j] == '0')
+				{
+					if (rand() % 100 < 20)
+					{
+						int iPercent = rand() % 100;
+
+						if (iPercent < 70)
+							Maze[pBombArr[i].y][pBombArr[i].x - j] = '5';
+						else if (iPercent < 80)
+							Maze[pBombArr[i].y][pBombArr[i].x - j] = '6';
+						else
+							Maze[pBombArr[i].y][pBombArr[i].x - j] = '7';
+					}
+					else
+						Maze[pBombArr[i].y][pBombArr[i].x - j] = '1';
+				}
+
+				if (pPlayer->tPos.x == pBombArr[i].x - j && pPlayer->tPos.y == pBombArr[i].y)
+				{
+					pPlayer->tPos.x = 0;
+					pPlayer->tPos.y = 0;
+				}
+			}
+
+			if (pBombArr[i].x + j <= 19)
+			{
+				if (Maze[pBombArr[i].y][pBombArr[i].x + j] == '0')
+				{
+					int iPercent = rand() % 100;
+
+					if (iPercent < 70)
+						Maze[pBombArr[i].y][pBombArr[i].x + j] = '5';
+					else if (iPercent < 80)
+						Maze[pBombArr[i].y][pBombArr[i].x + j] = '6';
+					else
+						Maze[pBombArr[i].y][pBombArr[i].x + j] = '1';
+				}
+
+				if (pPlayer->tPos.x == pBombArr[i].x + j && pPlayer->tPos.y == pBombArr[i].y)
+				{
+					pPlayer->tPos.x = 0;
+					pPlayer->tPos.y = 0;
+				}
+			}
 		}
 	}
 
@@ -234,30 +368,33 @@ void Fire(char Maze[21][21], PPOINT pPlayer, PPOINT pBombArr, int* pBombCount)
 
 int main()
 {
+	srand((unsigned int)time(0));
+
 	// 20 x 20 ¹Ì·Î »ý¼º
 	char strMaze[21][21] = {};
 
-	POINT tPlayerPos;
+	PLAYER tPlayer = {};
 	POINT tStartPos;
 	POINT tEndPos;
 
-	int iBombCount = 5;
-	int iAddBomb = 0;
+	tPlayer.iBombPower = 1;
+
+	int iBombCount = 0;
 	POINT tBombPos[5] = {};
 
-	SetMaze(strMaze, &tPlayerPos, &tStartPos, &tEndPos);
+	SetMaze(strMaze, &tPlayer, &tStartPos, &tEndPos);
 
 	while (true)
 	{
 		system("cls");
-		Output(strMaze, &tPlayerPos);
-		if (tPlayerPos.x == tEndPos.x && tPlayerPos.y == tEndPos.x)
+		Output(strMaze, &tPlayer);
+		if (tPlayer.tPos.x == tEndPos.x && tPlayer.tPos.y == tEndPos.x)
 		{
 			cout << "µµÂøÇß½À´Ï´Ù." << endl;
 			break;
 		}
 
-		cout << "t : ÆøÅº ¼³Ä¡ u : ÆøÅº ÅÍ¶ß¸®±â" << endl;
+		cout << "t : ÆøÅº ¼³Ä¡ u : ÆøÅº ÅÍ¶ß¸®±â i : º® ¹Ð±â" << endl;
 		cout << "w : À§ s : ¾Æ·¡ a : ÁÂ d : ¿ì q : Á¾·á >> ";
 		char cInput = _getch();
 
@@ -265,11 +402,11 @@ int main()
 			break;
 
 		else if (cInput == 't' || cInput == 'T')
-			CreateBomb(strMaze, &tPlayerPos, tBombPos, &iAddBomb);
+			CreateBomb(strMaze, &tPlayer, tBombPos, &iBombCount);
 		else if (cInput == 'u' || cInput == 'U')
-			Fire(strMaze, &tPlayerPos, tBombPos, &iAddBomb);
+			Fire(strMaze, &tPlayer, tBombPos, &iBombCount);
 		else
-			MovePlayer(strMaze, &tPlayerPos, cInput);
+			MovePlayer(strMaze, &tPlayer, cInput);
 	}
 
 	return 0;

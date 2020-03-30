@@ -37,7 +37,7 @@ typedef struct _tagStudent
 typedef struct _tagNode
 {
 	STUDENT tStudent;
-	PNODE pNext;
+	_tagNode* pNext;
 }NODE, *PNODE;
 
 // 리스트 구조체
@@ -71,6 +71,14 @@ int InputInt()
 	return iInput;
 }
 
+void InputString(char* pString, int iSize)
+{
+	cin.clear();
+	cin.ignore(1024, '\n');
+	cin.getline(pString, iSize - 1);
+
+}
+
 int OutputMenu()
 {
 	system("cls");
@@ -86,6 +94,20 @@ int OutputMenu()
 		return MM_NONE;
 
 	return iInput;
+}
+
+void Insert(PLIST pList)
+{
+	system("cls");
+	cout << "==================== 학생추가 ====================" << endl;
+
+	STUDENT tStudent = {};
+
+	cout << "이름 : ";
+	InputString(tStudent.strName, NAME_SIZE);
+
+	cout << "국어 : ";
+	tStudent.iKor = InputInt();
 }
 
 int main()
@@ -104,7 +126,7 @@ int main()
 		switch (iMenu)
 		{
 		case MM_INSERT:
-
+			Insert(&tList);
 			break;
 		case MM_DELETE:
 			break;

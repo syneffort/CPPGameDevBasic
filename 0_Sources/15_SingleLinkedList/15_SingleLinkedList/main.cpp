@@ -105,9 +105,144 @@ void Insert(PLIST pList)
 
 	cout << "이름 : ";
 	InputString(tStudent.strName, NAME_SIZE);
-
+	cout << "학번 : ";
+	tStudent.iNumber = InputInt();
 	cout << "국어 : ";
 	tStudent.iKor = InputInt();
+	cout << "영어 : ";
+	tStudent.iEng = InputInt();
+	cout << "수학 : ";
+	tStudent.iMath = InputInt();
+
+	tStudent.iTotal = tStudent.iKor + tStudent.iEng + tStudent.iMath;
+	tStudent.fAvg = tStudent.iTotal / 3.f;
+
+	// 노드에 동적할당
+	PNODE pNode = new NODE;
+	pNode->pNext = NULL;
+	pNode->tStudent = tStudent;
+
+	if (pList->pBegin == NULL)
+		pList->pBegin = pNode;
+	else
+		pList->pEnd->pNext = pNode;
+
+	pList->pEnd = pNode;
+	pList->iSize++;
+}
+
+void ClearList(PLIST pList)
+{
+	PNODE pNode = pList->pBegin;
+	while (pNode != NULL)
+	{
+		PNODE pNext = pNode->pNext;
+		delete pNode;
+		pNode = pNext;
+	}
+
+	pList->pBegin = NULL;
+	pList->pEnd = NULL;
+	pList->iSize = 0;
+}
+
+void OutputStudent(const PSTUDENT pStudent)
+{
+	cout << "이름 : " << pStudent->strName << "\t학번 : " << pStudent->iNumber << endl;
+	cout << "국어 : " << pStudent->iKor << "\t영어 : " << pStudent->iEng << endl;
+	cout << "수학 : " << pStudent->iMath << endl;
+	cout << "총점 : " << pStudent->iTotal << "\t평균 : " << pStudent->fAvg << endl << endl;
+}
+
+void Output(PLIST pList)
+{
+	system("cls");
+	cout << "==================== 학생출력 ====================" << endl;
+
+	PNODE pNode = pList->pBegin;
+	while (pNode != NULL)
+	{
+		OutputStudent(&pNode->tStudent);
+		pNode = pNode->pNext;
+	}
+
+	cout << "학생수 : " << pList->iSize << endl;
+	system("pause");
+}
+
+void Search(PLIST pList)
+{
+	system("cls");
+	cout << "==================== 학생탐색 ====================" << endl;
+
+	cout << "탐색할 이름을 입력하세요 : ";
+	char strName[NAME_SIZE] = {};
+	InputString(strName, NAME_SIZE);
+
+	PNODE pNode = pList->pBegin;
+	while (pNode != NULL)
+	{
+		if (strcmp(pNode->tStudent.strName, strName) == 0)
+		{
+			OutputStudent(&pNode->tStudent);
+			system("pause");
+			return;
+		}
+
+		pNode = pNode->pNext;
+	}
+
+	cout << "찾는 학생이 없습니다." << endl;
+	system("pause");
+}
+
+void Delete(PLIST pList)
+{
+	system("cls");
+	cout << "==================== 학생삭제 ====================" << endl;
+
+	cout << "삭제할 이름을 입력하세요 : ";
+	char strName[NAME_SIZE] = {};
+	InputString(strName, NAME_SIZE);
+
+	PNODE pNode = pList->pBegin;
+	PNODE pPrev = NULL;
+	while (pNode != NULL)
+	{
+		if (strcmp(pNode->tStudent.strName, strName) == 0)
+		{
+			cout << strName << "학생 삭제 중" << endl;
+
+			PNODE pNext = pNode->pNext;
+			if (pPrev == NULL)
+			{
+				delete pNode;
+				pList->pBegin = pNext;
+
+				if (pNext == NULL)
+					pList->pEnd = NULL;
+			}
+			else
+			{
+				delete pNode;
+				pPrev->pNext = pNext;
+
+				if (pNext == NULL)
+					pList->pEnd = pPrev;
+			}
+
+			--pList->iSize;
+			cout << strName << "학생 삭제 완료" << endl;
+			system("pause");
+			return;
+		}
+
+		pPrev = pNode;
+		pNode = pNode->pNext;
+	}
+
+	cout << "삭제할 학생을 찾을 수 없습니다" << endl;
+	system("pause");
 }
 
 int main()
@@ -129,13 +264,18 @@ int main()
 			Insert(&tList);
 			break;
 		case MM_DELETE:
+			Delete(&tList);
 			break;
 		case MM_SEARCH:
+			Search(&tList);
 			break;
 		case MM_OUTPUT:
+			Output(&tList);
 			break;
 		}
 	}
+
+	ClearList(&tList);
 
 	return 0;
 }

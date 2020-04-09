@@ -13,6 +13,7 @@ enum MAIN_MENU
 	MM_DELETE,
 	MM_SEARCH,
 	MM_OUTPUT,
+	MM_SORT,
 	MM_EXIT
 };
 
@@ -23,7 +24,8 @@ int OutputMenu()
 	cout << "2. 학생삭제" << endl;
 	cout << "3. 학생탐색" << endl;
 	cout << "4. 학생출력" << endl;
-	cout << "5. 종료" << endl << endl;
+	cout << "5. 학생정렬" << endl;
+	cout << "6. 종료" << endl << endl;
 	cout << "메뉴를 선택하세요 : ";
 	int iInput = InputInt();
 
@@ -31,18 +33,6 @@ int OutputMenu()
 		return MM_NONE;
 
 	return iInput;
-}
-
-void InitList(PLIST pList)
-{
-	pList->iSize = 0;
-	pList->pBebin = new NODE;
-	pList->pEnd = new NODE;
-
-	pList->pBebin->pNext = pList->pEnd;
-	pList->pEnd->pPrev = pList->pBebin;
-	pList->pBebin->pPrev = NULL;
-	pList->pEnd->pNext = NULL;
 }
 
 int main()
@@ -60,7 +50,7 @@ int main()
 		switch (iMenu)
 		{
 		case MM_INSERT:
-			Insert(&tList);
+			Push_Back(&tList);
 			break;
 		case MM_DELETE:
 			Delete(&tList);
@@ -70,6 +60,9 @@ int main()
 			break;
 		case MM_OUTPUT:
 			Output(&tList);
+			break;
+		case MM_SORT:
+			Sort(&tList);
 			break;
 		}
 	}

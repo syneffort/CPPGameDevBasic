@@ -5,6 +5,20 @@
 
 using namespace std;
 
+enum OUTPUT_TYPE
+{
+	OT_NONE,
+	OT_OUTPUT,
+	OT_REVERSE
+};
+
+enum SORT_TYPE
+{
+	ST_NONE,
+	ST_NUMBER,
+	ST_AVG
+};
+
 #define NAME_SIZE 32
 
 typedef struct _tagStudent
@@ -30,12 +44,12 @@ typedef struct _tagList
 {
 	// pBegin과 pEnd는 명시적으로 처음과 끝을 의미하도록 함
 	// 실제 데이터를 저장하는 노드는 두 노드 사이에 존재함
-	PNODE pBebin;
+	PNODE pBegin;
 	PNODE pEnd;
 	int iSize;
 }LIST, *PLIST;
 
-int InputInt()
+static int InputInt()
 {
 	int iInput;
 	cin >> iInput;
@@ -50,7 +64,7 @@ int InputInt()
 	return iInput;
 }
 
-void InputString(char* pString, int iSize)
+static void InputString(char* pString, int iSize)
 {
 	cin.clear();
 	cin.ignore(1024, '\n');
@@ -62,5 +76,14 @@ void InitList(PLIST pList);
 //void ClearList(PLIST pList);
 void DestroyList(PLIST pList);
 
-void Push_Back();
-void Push_Front();
+void Push_Back(PLIST pList);
+void Push_Front(PLIST pList);
+
+void OutputStudent(const PSTUDENT pStudent);
+void Output(PLIST pList);
+
+void Search(PLIST pList);
+
+void Delete(PLIST pList);
+
+void Sort(PLIST pList);

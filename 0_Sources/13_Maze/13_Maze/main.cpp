@@ -39,6 +39,77 @@ typedef struct _tagPlayer
 
 void SetMaze(char Maze[21][21], PPLAYER pPlayer, PPOINT pStartPos, PPOINT pEndPos)
 {
+	// MazeList.txt 파읽 읽기
+	FILE* pFile = NULL;
+	fopen_s(&pFile, "MazeList.txt", "rt");
+
+	char** pMazeList = NULL;
+	if (pFile)
+	{
+		char cCount;
+		fread(&cCount, 1, 1, pFile);
+		int iMazeCount = atoi(&cCount);
+		fread(&cCount, 1, 1, pFile);
+
+		pMazeList = new char*[iMazeCount];
+		for (int i = 0; i < iMazeCount; i++)
+		{
+			pMazeList[i] = new char[256];
+
+			int iNameCount = 0;
+			while (true)
+			{
+				fread(&cCount, 1, 1, pFile);
+				if (cCount == '\n')
+					break;
+
+				pMazeList[i][iNameCount] = cCount;
+				iNameCount++;
+			}
+			pMazeList[i][iNameCount] = 0;
+		}
+
+		fclose(pFile);
+
+		for (int i = 0; i < iMazeCount; i++)
+		{
+			cout << i + 1 << ". " << pMazeList[i] << endl;
+		}
+		cout << "미로를 선택하세요 : ";
+		int iSelect;
+		cin >> iSelect;
+
+		fopen_s(&pFile, pMazeList[iSelect - 1], "rt");
+		if (pFile)
+		{
+			for (int i = 0; i < 20; i++)
+			{
+				fread(Maze[i], 1, 20, pFile);
+
+				for (int j = 0; j < 20; j++)
+				{
+					if (Maze[i][j] == '2')
+					{
+						pStartPos->x = j;
+						pStartPos->y = i;
+
+						pPlayer->tPos = *pStartPos;
+					}
+					else if (Maze[i][j] == '3')
+					{
+						pEndPos->x = j;
+						pEndPos->y = i;
+					}
+				}
+
+				fread(&cCount, 1, 1, pFile); // '\n'
+			}
+
+			fclose(pFile);
+		}
+	}
+
+	/*
 	pStartPos->x = 0;
 	pStartPos->y = 0;
 
@@ -67,6 +138,7 @@ void SetMaze(char Maze[21][21], PPLAYER pPlayer, PPOINT pStartPos, PPOINT pEndPo
 	strcpy_s(Maze[17],	"00110101111111110000");
 	strcpy_s(Maze[18],	"01110011110101000000");
 	strcpy_s(Maze[19],	"01111011011111111113");
+	*/
 }
 
 void Output(char Maze[21][21], PPLAYER pPlayer)

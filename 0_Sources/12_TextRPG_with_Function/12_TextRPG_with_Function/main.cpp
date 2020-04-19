@@ -4,6 +4,14 @@
 
 using namespace std;
 
+enum GAME_MODE
+{
+	GM_NONE,
+	GM_NEW,
+	GM_LOAD,
+	GM_END
+};
+
 enum MAIN_MENU
 {
 	MM_NONE,
@@ -210,6 +218,10 @@ int SelectJob()
 
 void SetPlayer(_tagPlayer *pPlayer)
 {
+	system("cls");
+	cin.clear();
+	cin.ignore(1024, '\n');
+
 	cout << "이름 : ";
 	cin.getline(pPlayer->strName, NAME_SIZE - 1);
 
@@ -255,6 +267,88 @@ void SetPlayer(_tagPlayer *pPlayer)
 		pPlayer->iMPMax = 300;
 		break;
 	}
+}
+
+bool LoadPlayer(_tagPlayer* pPlayer)
+{
+	FILE* pFile = NULL;
+	fopen_s(&pFile, "Player.ply", "rb");
+	if (pFile)
+	{
+		/*fread(pPlayer->strName, 1, NAME_SIZE, pFile);
+		fread(&pPlayer->eJob, sizeof(JOB), 1, pFile);
+		fread(pPlayer->strJobName, 1, NAME_SIZE, pFile);
+		fread(&pPlayer->iAttackMin, 4, 1, pFile);
+		fread(&pPlayer->iAttackMax, 4, 1, pFile);
+		fread(&pPlayer->iArmorMin, 4, 1, pFile);
+		fread(&pPlayer->iArmorMax, 4, 1, pFile);
+		fread(&pPlayer->iHP, 4, 1, pFile);
+		fread(&pPlayer->iHPMax, 4, 1, pFile);
+		fread(&pPlayer->iMP, 4, 1, pFile);
+		fread(&pPlayer->iMPMax, 4, 1, pFile);
+		fread(&pPlayer->iExp, 4, 1, pFile);
+		fread(&pPlayer->iLevel, 4, 1, pFile);
+
+		fread(&pPlayer->bEquip[EQ_WEAPON], 1, 1, pFile);
+		if (pPlayer->bEquip[EQ_WEAPON])
+			fread(&pPlayer->tEquip[EQ_WEAPON], sizeof(_tagItem), 1, pFile);
+
+		fread(&pPlayer->bEquip[EQ_ARMOR], 1, 1, pFile);
+		if (pPlayer->bEquip[EQ_ARMOR])
+			fread(&pPlayer->tEquip[EQ_ARMOR], sizeof(_tagItem), 1, pFile);
+
+		fread(&pPlayer->tInventory.iGold, 4, 1, pFile);
+		fread(&pPlayer->tInventory.iItemCount, 4, 1, pFile);
+		fread(pPlayer->tInventory.tItem, sizeof(_tagItem), pPlayer->tInventory.iItemCount, pFile);*/
+
+		fread(&pPlayer, sizeof(_tagPlayer), 1, pFile);
+
+		fclose(pFile);
+		return true;
+	}
+
+	return false;
+}
+
+bool SavePlayer(_tagPlayer* pPlayer)
+{
+	FILE* pFile = NULL;
+	fopen_s(&pFile, "Player.ply", "wb");
+	if (pFile)
+	{
+		/*fwrite(pPlayer->strName, 1, NAME_SIZE, pFile);
+		fwrite(&pPlayer->eJob, sizeof(JOB), 1, pFile);
+		fwrite(pPlayer->strJobName, 1, NAME_SIZE, pFile);
+		fwrite(&pPlayer->iAttackMin, 4, 1, pFile);
+		fwrite(&pPlayer->iAttackMax, 4, 1, pFile);
+		fwrite(&pPlayer->iArmorMin, 4, 1, pFile);
+		fwrite(&pPlayer->iArmorMax, 4, 1, pFile);
+		fwrite(&pPlayer->iHP, 4, 1, pFile);
+		fwrite(&pPlayer->iHPMax, 4, 1, pFile);
+		fwrite(&pPlayer->iMP, 4, 1, pFile);
+		fwrite(&pPlayer->iMPMax, 4, 1, pFile);
+		fwrite(&pPlayer->iExp, 4, 1, pFile);
+		fwrite(&pPlayer->iLevel, 4, 1, pFile);
+
+		fwrite(&pPlayer->bEquip[EQ_WEAPON], 1, 1, pFile);
+		if (pPlayer->bEquip[EQ_WEAPON])
+			fwrite(&pPlayer->tEquip[EQ_WEAPON], sizeof(_tagItem), 1, pFile);
+
+		fwrite(&pPlayer->bEquip[EQ_ARMOR], 1, 1, pFile);
+		if (pPlayer->bEquip[EQ_ARMOR])
+			fwrite(&pPlayer->tEquip[EQ_ARMOR], sizeof(_tagItem), 1, pFile);
+
+		fwrite(&pPlayer->tInventory.iGold, 4, 1, pFile);
+		fwrite(&pPlayer->tInventory.iItemCount, 4, 1, pFile);
+		fwrite(pPlayer->tInventory.tItem, sizeof(_tagItem), pPlayer->tInventory.iItemCount, pFile);*/
+
+		fwrite(&pPlayer, sizeof(_tagPlayer), 1, pFile);
+
+		fclose(pFile);
+		return true;
+	}
+
+	return false;
 }
 
 _tagMonster CreateMonster(char *pName, int iAttackMin, int iAttackMax, int iArmorMin, int iArmorMax,
@@ -812,7 +906,35 @@ int main()
 	srand((unsigned int)time(0));
 
 	_tagPlayer tPlayer = {};
-	SetPlayer(&tPlayer);
+
+	int iGameMode = 0;
+	while (iGameMode <= GM_NONE || iGameMode >= GM_END)
+	{
+		system("cls");
+		cout << "1. 새로하기" << endl;
+		cout << "2. 이어하기" << endl;
+		cout << "3. 종료" << endl;
+		cout << "게임 모드를 선택하세요 : ";
+		iGameMode = InputInt();
+	}
+
+	if (iGameMode == GM_END)
+		return 0;
+
+	switch (iGameMode)
+	{
+	case GM_NEW:
+		SetPlayer(&tPlayer);
+		break;
+	case GM_LOAD:
+		if (!LoadPlayer(&tPlayer))
+		{
+			cout << "플레이어 파일 오류 !!" << endl;
+			system("pause");
+			return 0;
+		}
+		break;
+	}
 
 	_tagMonster tMonsterArr[MT_BACK - 1] = {};
 	SetMonster(tMonsterArr);
@@ -851,6 +973,8 @@ int main()
 			break;
 		}
 	}
+
+	SavePlayer(&tPlayer);
 
 	return 0;
 }

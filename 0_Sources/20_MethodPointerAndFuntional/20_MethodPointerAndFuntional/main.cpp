@@ -56,6 +56,67 @@ public:
 	}
 };
 
+typedef struct _tagPoint
+{
+	int x;
+	int y;
+	_tagPoint() :
+		x(0),
+		y(0)
+	{
+
+	}
+	
+	_tagPoint(int _x, int _y) : 
+		x(_x),
+		y(_y)
+	{
+
+	}
+
+	_tagPoint(const _tagPoint& pt)
+	{
+		// 얕은 복사 (this를 역참조)
+		*this = pt;
+	}
+
+	// 오퍼레이터
+	_tagPoint operator +(const _tagPoint& pt)
+	{
+		_tagPoint result;
+		result.x = x + pt.x;
+		result.y = y + pt.y;
+		return result;
+	}
+
+	_tagPoint operator +(int a)
+	{
+		_tagPoint result;
+		result.x = x + a;
+		result.y = y + a;
+		return result;
+	}
+
+	void operator +=(int a)
+	{
+		x += a;
+		y += a;
+	}
+
+	void operator <<(const _tagPoint& pt)
+	{
+		x = pt.x;
+		y = pt.y;
+	}
+
+	void operator >>(_tagPoint& pt)
+	{
+		pt.x = x;
+		pt.y = y;
+	}
+
+}POINT, *PPOINT;
+
 int main()
 {
 	int(*pFunc)(int, int) = Sum;
@@ -102,6 +163,18 @@ int main()
 
 	func4 = bind(TestFunc, placeholders::_1);
 	func4(3.14f);
+
+	cout << "=====================================" << endl;
+
+	POINT pt1(10, 20), pt2(30, 40), pt3;
+
+	pt3 = pt1 + pt2;
+	pt3 << pt1;
+	pt2 >> pt3;
+	pt3 = pt3 + 100;
+	pt3 += 1000;
+	cout << "pt3 : " << "x : " << pt3.x << "\ty : " << pt3.y << endl;
+	cout << "pt1 : " << "x : " << pt1.x << "\ty : " << pt1.y << endl;
 
 	system("pause");
 
